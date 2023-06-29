@@ -48,9 +48,9 @@ class RestoreDataset(IterableDataset):
         for line in open(self.corpus_filename):            
             data = json.loads(line)
             # Tokenizer를 사용하지 않고 글자가 각 Vocab이 됩니다.
-            source_counter.update(data['sentence'])
+            source_counter.update(data[0])
             # Output의 Vocab도 글자 단위지만 자음, 모음과 같이 입력에는 없는 Vocab이 있을 수도 있습니다.
-            target_counter.update(data['morphemes'])
+            target_counter.update(data[1])
 
         # 특수 Vocab들을 추가합니다.
         return vocab(source_counter, specials=['<unk>', '<pad>', '<bos>', '<eos>']), vocab(target_counter, specials=['<unk>', '<pad>', '<bos>', '<eos>'])
@@ -61,11 +61,11 @@ class RestoreDataset(IterableDataset):
             data = json.loads(line)
 
             # 너무 긴 문장은 생략
-            if len(data['sentence']) > self.max_characters:
+            if len(data[0]) > self.max_characters:
                 continue
 
-            x = torch.tensor([self.source_vocab[c] for c in data['sentence'].strip()], dtype=torch.long)
-            y = torch.tensor([self.target_vocab[c] for c in data['morphemes'].strip()], dtype=torch.long)
+            x = torch.tensor([self.source_vocab[c] for c in data[0].strip()], dtype=torch.long)
+            y = torch.tensor([self.target_vocab[c] for c in data[1].strip()], dtype=torch.long)
 
             yield x, y
             

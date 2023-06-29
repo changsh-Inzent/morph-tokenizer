@@ -1,51 +1,32 @@
 import json
-import argparse
-import tqdm
+import random
+
+from composer import decompose
+
 
 MORPHEME_SEPARATOR = "▁"
-EOJEOL_SEPARATOR = " "
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--input')
-parser.add_argument('-o', '--output')
 
-args = parser.parse_args()
+def read_jsonl(src):
+    with open(src) as f:
+        for x in f:
+            yield json.loads(x)
 
-total_sentences = 0
-total_eojeols = 0
+def write_jsonl(dest, data):
+    with open(dest, 'w') as f:
+        for x in data:
+            f.write(json.dumps(x, separators=(',', ':'), ensure_ascii=False) + '\n')
 
-with open(args.output, 'w') as f:
-    input_data = json.loads(open(args.input).read())
+def morph(src):
+    for x in read_jsonl(src):
+        s = ' '.join([decompose(w[0]) for w in x[1]])
+        d = ' '.join([MORPHEME_SEPARATOR.join([decompose(t[0]) for t in l[1]]) for l in x[1]])
+        yield (s, d)
 
-    for document_item in tqdm.tqdm(input_data['document']):
-        for sentence_item in document_item['sentence']:
-            total_sentences += len(sentence_item)
+if __name__ == '__main__':
+    src = list(morph('raw.jsonl'))
+    random.shuffle(src)
 
-            if sentence_item['word'] and sentence_item['morpheme']:
-                word_string = EOJEOL_SEPARATOR.join(word_item['form'] for word_item in sentence_item['word'])
-
-                labels = []
-                old_word_id = 0
-                morphemes_per_eojeol = []
-                morphemes = []
-                for morpheme_item in sentence_item['morpheme']:
-                    # 어절의 처음이 아닌 형태소 앞에 ▁를 붙여줍니다.
-                    if morpheme_item['word_id'] != 1 and morpheme_item['word_id'] != old_word_id:
-                        morphemes_per_eojeol.append(MORPHEME_SEPARATOR.join(morphemes))
-                        morphemes = []
-                        old_word_id = morpheme_item['word_id']
-
-                    morphemes.append(morpheme_item['form'])
-
-                    labels.append(morpheme_item['label'])
-
-                morphemes_per_eojeol.append(MORPHEME_SEPARATOR.join(morphemes))
-
-                morpheme_string = EOJEOL_SEPARATOR.join(morphemes_per_eojeol)
-
-                total_eojeols += len(sentence_item['word'])
-
-                f.write(json.dumps({'sentence': word_string, 'morphemes': morpheme_string, 'labels': labels}) + '\n')
-
-print(f'Total sentences: {total_sentences}')
-print(f'Total eojeols: {total_eojeols}')
+    left = int(len(src)*0.05)
+    write_jsonl('test.jsonl', src[:left])
+    write_jsonl('train.jsonl', src[left:])

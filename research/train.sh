@@ -1,1 +1,12 @@
-python3 train.py -t train.jsonl -b 16 -e 2 -ed 512 -nel 4 -ndl 4 -nh 8 -fd 512 -bp 100 -m 500 -o models.restore
+python3 train.py \
+  --train train.jsonl \
+  --batch 16 \
+  --epoch 2 \
+  --embedding-dim 512 \
+  --num-encoder-layers 4 \
+  --num-decoder-layers 4 \
+  --num-heads 8 \
+  --feedforward-dim 512 \
+  --batch-print 100 \
+  --max-characters 500 \
+  --output models.restore
