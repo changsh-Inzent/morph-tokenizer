@@ -18,6 +18,10 @@ import math
 torch.manual_seed(0)
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
+torch.set_num_threads(8)
+torch.set_num_interop_threads(8)
+print(torch.get_num_threads())
+
 class RestoreDataset(IterableDataset):
     UNK_INDEX = 0
     PAD_INDEX = 1

@@ -24,6 +24,9 @@ def decompose(text, convert_to_jongsung=True):
 		elif convert_to_jongsung and a in jongsung_cnv:
 			idx = jongsung_cnv.index(a)
 			o += jongsung[idx]
+		elif a > 0xFF:
+			o += chr(0x2460 + a//256)
+			o += chr(0x2460 + a%256)
 		else:
 			o += c
 	return o

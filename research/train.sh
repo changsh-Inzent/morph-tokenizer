@@ -8,5 +8,5 @@ python3 train.py \
   --num-heads 8 \
   --feedforward-dim 512 \
   --batch-print 100 \
-  --max-characters 500 \
+  --max-characters 1024 \
   --output models.restore

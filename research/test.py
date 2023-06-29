@@ -5,6 +5,8 @@ from torch.nn import TransformerEncoder, TransformerEncoderLayer, TransformerDec
 import argparse
 import math
 
+from composer import decompose
+
 torch.manual_seed(0)
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -123,7 +125,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    model_data = torch.load(args.model)
+    model_data = torch.load(args.model, map_location=torch.device(DEVICE))
 
     source_vocab_size = model_data['source_vocab_size']
     source_vocab = model_data['source_vocab']
@@ -148,7 +150,7 @@ if __name__ == '__main__':
         while True:
             source = input('Description: ')
             if source:
-                print('Answer:', restore_morphemes(model, source_vocab, target_vocab, source))
+                print('Answer:', restore_morphemes(model, source_vocab, target_vocab, decompose(source)))
             else:
                 break
                 
